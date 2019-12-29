@@ -3,6 +3,7 @@ import path from 'path';
 import uuid from 'uuid/v1';
 
 const PATH_TO_META = path.join(__dirname, 'uploaded-meta');
+const PATH_TO_UPLOADED = path.join(__dirname, 'uploaded-files');
 const IGNORE = ['.gitkeep'];
 
 const writeJSON = async (path, json) => {
@@ -51,4 +52,6 @@ export const readUploadedMeta = async (id) => {
     const pathToFile = path.join(PATH_TO_META, `${id}.json`);
     const json = await readJSON(pathToFile);
     return json;
-}
+};
+
+export const getPathToUploadedFile = filename => path.join(PATH_TO_UPLOADED, filename);

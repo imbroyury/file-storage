@@ -8,8 +8,10 @@ import {
   CardContent,
   CardActions,
   Button,
+  CircularProgress,
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
+import { requestStatuses } from '../uploadStatuses';
 
 const useStyles = makeStyles({
   paper: {
@@ -23,16 +25,29 @@ const useStyles = makeStyles({
 const AllFiles = () => {
   const classes = useStyles();
 
-  const [error, setError] = useState();
+  const [requestState, setRequestState] = useState(requestStatuses.uninitialized);
   const [files, setFiles] = useState([]);
 
   useEffect(() => {
-    axios.get('/get-all-files')
-      .then(({ data: files }) => {
+    const CancelToken = axios.CancelToken;
+    const source = CancelToken.source();
+
+    const getFiles = async () => {
+      try {
+        setRequestState(requestStatuses.running);
+        const { data: files } = await axios.get('/get-all-files', { cancelToken: source.token });
+        setRequestState(requestStatuses.done);
         setFiles(files);
-      })
-      .catch(e => setError(e));
-  }, []) // componentDidMount - empty dependency array
+      } catch(e) {
+        if (axios.isCancel(e)) return;
+        setRequestState(requestStatuses.error);
+      }
+    }
+
+    getFiles();
+
+    return source.cancel;
+  }, []);
 
   const renderError = () => (<Paper className={classes.paper}>
     <Typography variant="h4">Error while fetching files</Typography>
@@ -48,13 +63,20 @@ const AllFiles = () => {
       <Typography>{file.comment}</Typography>
     </CardContent>
     <CardActions>
-      <Button href={`/download?id=${file.id}`} color="primary" variant="outlined">Download</Button>
+      <Button
+        variant="outlined"
+        color="primary"
+        href={`/download?id=${file.id}`}
+      >
+        Download
+      </Button>
     </CardActions>
   </Card>)
 
   return (<Grid container>
-    {error && renderError()}
-    {(files.length === 0 && !error) && renderNoFiles()}
+    {requestState === requestStatuses.error && renderError()}
+    {(requestState === requestStatuses.done && files.length === 0) && renderNoFiles()}
+    {requestState === requestStatuses.running && <CircularProgress />}
     {files.map(renderFile)}
   </Grid>);
 }

@@ -1,6 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-server/requests
+server/uploaded-files/*
+server/uploaded-meta/*
 
 # dependencies
 /node_modules
