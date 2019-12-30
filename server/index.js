@@ -50,7 +50,6 @@ server.post('/upload-file', function (req, res) {
 
   reqProgress.on('progress', (progressInfo) => {
     const progressPercentage = Math.round(progressInfo.percentage);
-    console.log(uploadId, ' progress :', progressPercentage);
     const message = `${PERCENTAGE_PREFIX}${progressPercentage}`;
     wsConnections.sendMessageToConnection(uploadId, message);
     wsConnections.updateLastActivity(uploadId);
