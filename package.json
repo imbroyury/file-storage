@@ -23,7 +23,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "eject": "react-scripts eject",
-    "start-server": "nodemon -r esm server/index.js",
+    "start-server": "nodemon -r esm server/index.js --ignore ./server/uploaded-files --ignore ./server/uploaded-meta",
     "start-production": "react-scripts build && node -r esm server/index.js"
   },
   "proxy": "http://localhost:8280",
