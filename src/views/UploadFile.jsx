@@ -112,6 +112,7 @@ const UploadFile = () => {
         if (isMessagePrefixed(data, PERCENTAGE_PREFIX)) {
           const percentage = Number(extractPrefixedPayload(data, PERCENTAGE_PREFIX));
           setUploadPercentage(percentage);
+          if (percentage === 100) connection.close();
         }
       };
 

@@ -52,6 +52,7 @@ server.post('/upload-file', function (req, res) {
     const message = `${PERCENTAGE_PREFIX}${progressPercentage}`;
     wsConnections.sendMessageToConnection(uploadId, message);
     wsConnections.updateLastActivity(uploadId);
+    if (progressPercentage === 100) wsConnections.terminateConnection(uploadId);
   });
 
   upload(reqProgress, res, async (err) => {
@@ -59,8 +60,6 @@ server.post('/upload-file', function (req, res) {
 
     const { body, file } = reqProgress;
     const { originalname, filename } = file;
-
-    wsConnections.terminateConnection(uploadId);
 
     await writeUploadedMeta(originalname, body.comment, filename);
 
