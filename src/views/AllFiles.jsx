@@ -12,7 +12,7 @@ import {
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import { requestStatuses } from '../uploadStatuses';
-import { HTTP_URL } from '../hosts.js';
+import { HTTP_URL } from '../shared/hosts.js';
 
 const useStyles = makeStyles({
   paper: {

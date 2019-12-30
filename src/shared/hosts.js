@@ -4,8 +4,8 @@ const WS_PROTOCOL = 'ws';
 const LOCAL_HOST = 'localhost';
 const REMOTE_HOST = '178.172.195.18';
 
-const HTTP_PORT = '8280';
-const WS_PORT = '8281';
+export const HTTP_PORT = 8280;
+export const WS_PORT = 8281;
 
 const isDevEnv = process.env.NODE_ENV === 'development';
 

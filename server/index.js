@@ -6,13 +6,12 @@ import WebSocket from 'ws';
 import { writeUploadedMeta, readAllUploadedMeta, readUploadedMeta, getPathToUploadedFile } from './fileStorage';
 import { UPLOAD_ID_PREFIX, PERCENTAGE_PREFIX } from '../src/shared/constants';
 import { isMessagePrefixed, extractPrefixedPayload } from '../src/shared/helpers';
+import { HTTP_PORT, WS_PORT } from '../src/shared/hosts';
 import WSConnectionsStorage from './WSConnectionsStorage';
 const server = express();
 const upload = multer({ dest: 'server/uploaded-files/' }).single('file');
 
 const BUILD_FOLDER = path.join(__dirname, '..', 'build');
-const HTTP_PORT = 8280;
-const WS_PORT = 8281;
 
 const wsServer = new WebSocket.Server({ port: WS_PORT });
 

@@ -18,7 +18,7 @@ import uuid from 'uuid/v1';
 import { UPLOAD_ID_PREFIX, PERCENTAGE_PREFIX } from '../shared/constants';
 import { isMessagePrefixed, extractPrefixedPayload } from '../shared/helpers';
 import { requestStatuses } from '../uploadStatuses';
-import { WS_URL } from '../hosts.js';
+import { WS_URL } from '../shared/hosts.js';
 
 const useStyles = makeStyles(theme => ({
   paper: {
