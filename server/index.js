@@ -17,7 +17,7 @@ const WS_PORT = 8281;
 const wsServer = new WebSocket.Server({ port: WS_PORT });
 
 // id: connection storage
-const wsConnections = new WSConnectionsStorage(2000, 1000);
+const wsConnections = new WSConnectionsStorage(10000, 5000);
 
 wsServer.on('connection', connection => {
     connection.on('message', message => {

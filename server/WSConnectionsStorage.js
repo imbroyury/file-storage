@@ -2,7 +2,7 @@ export default class WSConnectionsStorage {
     constructor(keepAliveDuration, terminationInterval) {
         this._connections = {};
 
-        // every ${terminationInterval} sec terminate all stale connections based on ${keepAliveDuration}
+        // every ${terminationInterval} ms terminate all stale connections based on ${keepAliveDuration}
         setInterval(() => this._cleanStaleConnections(keepAliveDuration), terminationInterval);
     }
 
