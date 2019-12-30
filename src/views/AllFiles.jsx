@@ -12,6 +12,7 @@ import {
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import { requestStatuses } from '../uploadStatuses';
+import { HTTP_URL } from '../hosts.js';
 
 const useStyles = makeStyles({
   paper: {
@@ -66,7 +67,7 @@ const AllFiles = () => {
       <Button
         variant="outlined"
         color="primary"
-        href={`/download?id=${file.id}`}
+        href={`${HTTP_URL}/download?id=${file.id}`}
       >
         Download
       </Button>

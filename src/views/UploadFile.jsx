@@ -18,8 +18,7 @@ import uuid from 'uuid/v1';
 import { UPLOAD_ID_PREFIX, PERCENTAGE_PREFIX } from '../shared/constants';
 import { isMessagePrefixed, extractPrefixedPayload } from '../shared/helpers';
 import { requestStatuses } from '../uploadStatuses';
-
-const WS_URL = 'ws://localhost:8281';
+import { WS_URL } from '../hosts.js';
 
 const useStyles = makeStyles(theme => ({
   paper: {
