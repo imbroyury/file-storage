@@ -6,23 +6,23 @@ import WebSocket from 'ws';
 import { writeUploadedMeta, readAllUploadedMeta, readUploadedMeta, getPathToUploadedFile } from './fileStorage';
 import { UPLOAD_ID_PREFIX, PERCENTAGE_PREFIX } from '../src/shared/constants';
 import { isMessagePrefixed, extractPrefixedPayload } from '../src/shared/helpers';
+import { HTTP_PORT, WS_PORT } from '../src/shared/hosts';
+import WSConnectionsStorage from './WSConnectionsStorage';
 const server = express();
 const upload = multer({ dest: 'server/uploaded-files/' }).single('file');
 
 const BUILD_FOLDER = path.join(__dirname, '..', 'build');
-const HTTP_PORT = 8280;
-const WS_PORT = 8281;
 
 const wsServer = new WebSocket.Server({ port: WS_PORT });
 
 // id: connection storage
-const wsConnections = {};
+const wsConnections = new WSConnectionsStorage(10000, 5000);
 
 wsServer.on('connection', connection => {
     connection.on('message', message => {
       if (isMessagePrefixed(message, UPLOAD_ID_PREFIX)) {
         const id = extractPrefixedPayload(message, UPLOAD_ID_PREFIX);
-        wsConnections[id] = connection;
+        wsConnections.addConnection(id, connection);
       }
     });
 });
@@ -46,19 +46,23 @@ server.post('/upload-file', function (req, res) {
   req.pipe(reqProgress);
   // preserve headers
   reqProgress.headers = req.headers;
+
   reqProgress.on('progress', (progressInfo) => {
     const progressPercentage = Math.floor(progressInfo.percentage);
-    console.log(uploadId, ' progress :', progressPercentage);
-    const wsConnection = wsConnections[uploadId];
-    if (wsConnection) wsConnection.send(`${PERCENTAGE_PREFIX}${progressPercentage}`);
+    const message = `${PERCENTAGE_PREFIX}${progressPercentage}`;
+    wsConnections.sendMessageToConnection(uploadId, message);
+    wsConnections.updateLastActivity(uploadId);
+    if (progressPercentage === 100) wsConnections.terminateConnection(uploadId);
   });
+
   upload(reqProgress, res, async (err) => {
     if (err) return res.status(500);
+
     const { body, file } = reqProgress;
     const { originalname, filename } = file;
-    const wsConnection = wsConnections[uploadId];
-    if (wsConnection) wsConnection.terminate();
+
     await writeUploadedMeta(originalname, body.comment, filename);
+
     res.send('Upload successful');
   });
 });
