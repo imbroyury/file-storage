@@ -5,7 +5,7 @@ import progress from 'progress-stream';
 import WebSocket from 'ws';
 import { writeUploadedMeta, readAllUploadedMeta, readUploadedMeta, getPathToUploadedFile } from './fileStorage';
 import { UPLOAD_ID_PREFIX, PERCENTAGE_PREFIX } from '../src/shared/constants';
-import { isMessagePrefixed, extractPrefixedPayload } from '../src/shared/helpers';
+import { isMessagePrefixed, extractPrefixedPayload, prefixMessage } from '../src/shared/helpers';
 import { HTTP_PORT, WS_PORT } from '../src/shared/hosts';
 import WSConnectionsStorage from './WSConnectionsStorage';
 const server = express();
@@ -49,7 +49,7 @@ server.post('/upload-file', function (req, res) {
 
   reqProgress.on('progress', (progressInfo) => {
     const progressPercentage = Math.floor(progressInfo.percentage);
-    const message = `${PERCENTAGE_PREFIX}${progressPercentage}`;
+    const message = prefixMessage(progressPercentage, PERCENTAGE_PREFIX);
     wsConnections.sendMessageToConnection(uploadId, message);
     wsConnections.updateLastActivity(uploadId);
     if (progressPercentage === 100) wsConnections.terminateConnection(uploadId);

@@ -16,7 +16,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import { green } from '@material-ui/core/colors';
 import uuid from 'uuid/v1';
 import { UPLOAD_ID_PREFIX, PERCENTAGE_PREFIX } from '../shared/constants';
-import { isMessagePrefixed, extractPrefixedPayload } from '../shared/helpers';
+import { isMessagePrefixed, extractPrefixedPayload, prefixMessage } from '../shared/helpers';
 import { requestStatuses } from '../uploadStatuses';
 import { WS_URL } from '../shared/hosts.js';
 
@@ -105,7 +105,7 @@ const UploadFile = () => {
     if (shouldInitUpload) {
       const connection = new WebSocket(WS_URL);
 
-      connection.onopen = () => connection.send(`${UPLOAD_ID_PREFIX}${uploadId}`);
+      connection.onopen = () => connection.send(prefixMessage(uploadId, UPLOAD_ID_PREFIX));
 
       connection.onmessage = (event) => {
         const { data } = event;
