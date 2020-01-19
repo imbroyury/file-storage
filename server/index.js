@@ -1,4 +1,5 @@
 import express from 'express';
+import bodyParser from 'body-parser';
 import path from 'path';
 import multer from 'multer';
 import progress from 'progress-stream';
@@ -8,7 +9,10 @@ import { UPLOAD_ID_PREFIX, PERCENTAGE_PREFIX } from '../src/shared/constants';
 import { isMessagePrefixed, extractPrefixedPayload, prefixMessage } from '../src/shared/helpers';
 import { HTTP_PORT, WS_PORT } from '../src/shared/hosts';
 import WSConnectionsStorage from './WSConnectionsStorage';
+import DBService from './DBService';
+import errors from '../src/shared/errors';
 const server = express();
+server.use(bodyParser.json());
 const upload = multer({ dest: 'server/uploaded-files/' }).single('file');
 
 const BUILD_FOLDER = path.join(__dirname, '..', 'build');
@@ -74,7 +78,33 @@ server.get('/download', async (req, res) => {
     getPathToUploadedFile(meta.savedFilename),
     meta.originalFilename,
   );
-})
+});
+
+server.post('/register', async (req, res) => {
+  const { email, login, password } = req.body;
+
+  try {
+    const userByEmail = await DBService.getUserByEmail(email);
+    if (userByEmail !== null) return res.status(409).send(errors.emailAlreadyInUse);
+
+    const userByLogin = await DBService.getUserByLogin(login);
+    if (userByLogin !== null) return res.status(409).send(errors.loginAlreadyInUse);
+
+    const isUserCreated = await DBService.createUser(email, login, password);
+
+    if (isUserCreated) {
+      res.status(200).send();
+    } else {
+      res.status(500).send();
+    }
+  } catch(e) {
+    return res.status(500).send();
+  }
+});
+
+server.post('/login', async (req, res) => {
+
+});
 
 // For everything else, serve index file
 server.get('*', function (req, res) {

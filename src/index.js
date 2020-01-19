@@ -15,6 +15,8 @@ import {
 import { makeStyles } from '@material-ui/core/styles';
 import AllFiles from './views/AllFiles';
 import UploadFile from './views/UploadFile';
+import Login from './views/Login';
+import Register from './views/Register';
 
 const drawerWidth = '10rem';
 
@@ -40,6 +42,16 @@ const routes = [
     View: UploadFile,
     path: '/upload-file',
     linkLabel: 'Upload file',
+  },
+  {
+    View: Login,
+    path: '/login',
+    linkLabel: 'Log in',
+  },
+  {
+    View: Register,
+    path: '/register',
+    linkLabel: 'Register',
   }
 ]
 
