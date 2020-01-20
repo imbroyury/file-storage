@@ -11,6 +11,7 @@ import { HTTP_PORT, WS_PORT } from '../src/shared/hosts';
 import WSConnectionsStorage from './WSConnectionsStorage';
 import DBService from './DBService';
 import errors from '../src/shared/errors';
+import { encryptPassword, generateToken } from './crypto';
 const server = express();
 server.use(bodyParser.json());
 const upload = multer({ dest: 'server/uploaded-files/' }).single('file');
@@ -90,7 +91,8 @@ server.post('/register', async (req, res) => {
     const userByLogin = await DBService.getUserByLogin(login);
     if (userByLogin !== null) return res.status(409).send(errors.loginAlreadyInUse);
 
-    const isUserCreated = await DBService.createUser(email, login, password);
+    const encryptedPassword = await encryptPassword(password);
+    const isUserCreated = await DBService.createUser(email, login, encryptedPassword);
 
     if (isUserCreated) {
       res.status(200).send();
@@ -103,7 +105,23 @@ server.post('/register', async (req, res) => {
 });
 
 server.post('/login', async (req, res) => {
+  const { login, password } = req.body;
+  try {
+    const userByLogin = await DBService.getUserByLogin(login);
+    if (userByLogin === null) return res.status(401).send(errors.invalidCredentials);
 
+    const encryptedPassword = await encryptPassword(password);
+    if (encryptedPassword !== userByLogin.password) return res.status(401).send(errors.invalidCredentials);
+
+    const token = await generateToken();
+
+    await DBService.putSessionForUser(userByLogin.id, token);
+
+    res.status(200).send({ token });
+
+  } catch (e) {
+    res.status(500).send();
+  }
 });
 
 // For everything else, serve index file

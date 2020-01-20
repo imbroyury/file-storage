@@ -19,6 +19,7 @@ import { UPLOAD_ID_PREFIX, PERCENTAGE_PREFIX } from '../shared/constants';
 import { isMessagePrefixed, extractPrefixedPayload, prefixMessage } from '../shared/helpers';
 import { requestStatuses } from '../uploadStatuses';
 import { WS_URL } from '../shared/hosts.js';
+import { Redirect } from 'react-router-dom';
 
 const useStyles = makeStyles(theme => ({
   paper: {
@@ -49,7 +50,7 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const UploadFile = () => {
+const UploadFile = (props) => {
   const classes = useStyles();
   // upload state for useEffect
   const [shouldInitUpload, setShouldInitUpload] = useState(false);
@@ -217,6 +218,7 @@ const UploadFile = () => {
       }
       {uploadState === requestStatuses.done && renderSuccessMessage()}
       {uploadState === requestStatuses.error && renderErrorMessage()}
+      {!props.isUserLoggedIn && <Redirect to='/login' />}
     </Paper>
   </Grid>);
 }

@@ -4,9 +4,7 @@ import {
   Typography,
   TextField,
   Paper,
-  Chip,
   Button,
-  LinearProgress,
   Grid,
   Snackbar,
   SnackbarContent,
@@ -40,7 +38,7 @@ const useStyles = makeStyles(theme => ({
 
 const Register = () => {
   const classes = useStyles();
-  // upload state for useEffect
+
   const [shouldInitRegister, setShouldInitRegister] = useState(false);
   const [registerState, setRegisterState] = useState(requestStatuses.uninitialized);
   const [registerError, setRegisterError] = useState(null);

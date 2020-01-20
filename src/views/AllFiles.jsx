@@ -13,6 +13,7 @@ import {
 import { makeStyles } from '@material-ui/core/styles';
 import { requestStatuses } from '../uploadStatuses';
 import { HTTP_URL } from '../shared/hosts.js';
+import { Redirect } from 'react-router-dom';
 
 const useStyles = makeStyles({
   paper: {
@@ -23,7 +24,7 @@ const useStyles = makeStyles({
   }
 });
 
-const AllFiles = () => {
+const AllFiles = (props) => {
   const classes = useStyles();
 
   const [requestState, setRequestState] = useState(requestStatuses.uninitialized);
@@ -36,7 +37,9 @@ const AllFiles = () => {
     const getFiles = async () => {
       try {
         setRequestState(requestStatuses.running);
-        const { data: files } = await axios.get('/get-all-files', { cancelToken: source.token });
+        const { data: files } = await axios.get(
+          '/get-all-files',
+          { cancelToken: source.token });
         setRequestState(requestStatuses.done);
         setFiles(files);
       } catch(e) {
@@ -75,6 +78,7 @@ const AllFiles = () => {
   </Card>)
 
   return (<Grid container>
+    {!props.isUserLoggedIn && <Redirect to='/login' />}
     {requestState === requestStatuses.error && renderError()}
     {(requestState === requestStatuses.done && files.length === 0) && renderNoFiles()}
     {requestState === requestStatuses.running && <CircularProgress />}
