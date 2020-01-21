@@ -26,10 +26,11 @@ const readJSON = async (path) => {
     }
 }
 
-export const writeUploadedMeta = async (originalFilename, comment, savedFilename) => {
+export const writeUploadedMeta = async (userId, originalFilename, comment, savedFilename) => {
     const id = uuid();
     const pathToFile = path.join(PATH_TO_META, `${id}.json`);
     await writeJSON(pathToFile, {
+        userId,
         id,
         savedFilename,
         originalFilename,
@@ -37,14 +38,17 @@ export const writeUploadedMeta = async (originalFilename, comment, savedFilename
     });
 };
 
-export const readAllUploadedMeta = async () => {
+export const readAllUploadedMeta = async (userId) => {
     const list = await fsp.readdir(PATH_TO_META);
     const toRead = list.filter(item => !IGNORE.includes(item));
     const promisedReads = toRead.map(
         (filename) => readJSON(path.join(PATH_TO_META, filename))
             .catch(() => null) // nullify read errors
     );
-    const result = (await Promise.all(promisedReads)).filter(r => r !== null);
+    const result = (await Promise.all(promisedReads))
+        .filter(r => r !== null)
+        .filter(r => r.userId === userId);
+
     return result;
 };
 

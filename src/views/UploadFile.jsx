@@ -20,6 +20,7 @@ import { isMessagePrefixed, extractPrefixedPayload, prefixMessage } from '../sha
 import { requestStatuses } from '../uploadStatuses';
 import { WS_URL } from '../shared/hosts.js';
 import { Redirect } from 'react-router-dom';
+import AuthService from '../AuthService';
 
 const useStyles = makeStyles(theme => ({
   paper: {
@@ -85,7 +86,7 @@ const UploadFile = (props) => {
       const uploadFile = async () => {
         try {
           await axios.post(
-            `/upload-file?uploadId=${uploadId}`,
+            `/upload-file?uploadId=${uploadId}&userToken=${AuthService.getAuthData().token}`,
             formData,
             { cancelToken: source.token },
           );

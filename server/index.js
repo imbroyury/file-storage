@@ -12,6 +12,7 @@ import WSConnectionsStorage from './WSConnectionsStorage';
 import DBService from './DBService';
 import errors from '../src/shared/errors';
 import { encryptPassword, generateToken } from './crypto';
+
 const server = express();
 server.use(bodyParser.json());
 const upload = multer({ dest: 'server/uploaded-files/' }).single('file');
@@ -37,15 +38,20 @@ server.use(express.static(BUILD_FOLDER));
 // API
 server.get('/get-all-files', async (req, res) => {
   try {
-    const allUploadedMeta = await readAllUploadedMeta();
+    const { userToken } = req.query;
+    const userId = await DBService.getUserIdByToken(userToken);
+    if (userId === null) return res.status(401).send();
+    const allUploadedMeta = await readAllUploadedMeta(userId);
     res.send(allUploadedMeta);
   } catch(e) {
     res.status(500);
   }
 });
 
-server.post('/upload-file', function (req, res) {
-  const { uploadId } = req.query;
+server.post('/upload-file', async (req, res) => {
+  const { uploadId, userToken } = req.query;
+  const userId = await DBService.getUserIdByToken(userToken);
+  if (userId === null) return res.status(401).send();
   const reqProgress = progress({ time: 50, length: req.headers['content-length'] });
   // pipe to track progress
   req.pipe(reqProgress);
@@ -66,7 +72,7 @@ server.post('/upload-file', function (req, res) {
     const { body, file } = reqProgress;
     const { originalname, filename } = file;
 
-    await writeUploadedMeta(originalname, body.comment, filename);
+    await writeUploadedMeta(userId, originalname, body.comment, filename);
 
     res.send('Upload successful');
   });
@@ -99,7 +105,7 @@ server.post('/register', async (req, res) => {
     } else {
       res.status(500).send();
     }
-  } catch(e) {
+  } catch (e) {
     return res.status(500).send();
   }
 });

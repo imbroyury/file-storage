@@ -14,6 +14,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import { requestStatuses } from '../uploadStatuses';
 import { HTTP_URL } from '../shared/hosts.js';
 import { Redirect } from 'react-router-dom';
+import AuthService from '../AuthService';
 
 const useStyles = makeStyles({
   paper: {
@@ -38,7 +39,7 @@ const AllFiles = (props) => {
       try {
         setRequestState(requestStatuses.running);
         const { data: files } = await axios.get(
-          '/get-all-files',
+          `/get-all-files?userToken=${AuthService.getAuthData().token}`,
           { cancelToken: source.token });
         setRequestState(requestStatuses.done);
         setFiles(files);

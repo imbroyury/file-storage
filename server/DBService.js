@@ -18,7 +18,7 @@ const createUser = async (email, login, password) => {
     try {
         const response = await queryPool(`
             INSERT INTO users (email, login, password)
-            VALUES (?, ?, ?);
+            VALUES (?, ?, ?)
         `, [email, login, password]);
 
         if (response.result.affectedRows === 1) return true;
@@ -70,15 +70,17 @@ const putSessionForUser = async (userId, token) => {
     }
 };
 
-const validateToken = async (token) => {
+const getUserIdByToken = async (token) => {
     try {
         const response = await queryPool(`
             SELECT user_id FROM sessions
             WHERE token = ?
-        `, token)
-        console.log(response);
+        `, token);
+
+        if (response.result.length > 0) return response.result[0].user_id;
+
+        return null;
     } catch(e) {
-        console.log(e);
         throw e;
     }
 }
@@ -88,5 +90,5 @@ export default {
     getUserByEmail,
     getUserByLogin,
     putSessionForUser,
-    validateToken,
+    getUserIdByToken,
 }
