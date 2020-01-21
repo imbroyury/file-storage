@@ -13,6 +13,7 @@ import {
 import { makeStyles } from '@material-ui/core/styles';
 import { requestStatuses } from '../uploadStatuses';
 import { HTTP_URL } from '../shared/hosts.js';
+import headers from '../shared/headers';
 import { Redirect } from 'react-router-dom';
 import AuthService from '../AuthService';
 
@@ -39,8 +40,11 @@ const AllFiles = (props) => {
       try {
         setRequestState(requestStatuses.running);
         const { data: files } = await axios.get(
-          `/get-all-files?userToken=${AuthService.getAuthData().token}`,
-          { cancelToken: source.token });
+          '/get-all-files',
+          {
+            headers: { [headers.userToken]: AuthService.getAuthData().token },
+            cancelToken: source.token,
+          });
         setRequestState(requestStatuses.done);
         setFiles(files);
       } catch(e) {

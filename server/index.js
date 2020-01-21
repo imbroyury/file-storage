@@ -11,6 +11,7 @@ import { HTTP_PORT, WS_PORT } from '../src/shared/hosts';
 import WSConnectionsStorage from './WSConnectionsStorage';
 import DBService from './DBService';
 import errors from '../src/shared/errors';
+import headers from '../src/shared/headers';
 import { encryptPassword, generateToken } from './crypto';
 
 const server = express();
@@ -38,7 +39,7 @@ server.use(express.static(BUILD_FOLDER));
 // API
 server.get('/get-all-files', async (req, res) => {
   try {
-    const { userToken } = req.query;
+    const userToken = req.headers[headers.userToken];
     const userId = await DBService.getUserIdByToken(userToken);
     if (userId === null) return res.status(401).send();
     const allUploadedMeta = await readAllUploadedMeta(userId);
@@ -49,7 +50,8 @@ server.get('/get-all-files', async (req, res) => {
 });
 
 server.post('/upload-file', async (req, res) => {
-  const { uploadId, userToken } = req.query;
+  const { uploadId } = req.query;
+  const userToken = req.headers[headers.userToken];
   const userId = await DBService.getUserIdByToken(userToken);
   if (userId === null) return res.status(401).send();
   const reqProgress = progress({ time: 50, length: req.headers['content-length'] });

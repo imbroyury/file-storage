@@ -17,6 +17,7 @@ import { green } from '@material-ui/core/colors';
 import uuid from 'uuid/v1';
 import { UPLOAD_ID_PREFIX, PERCENTAGE_PREFIX } from '../shared/constants';
 import { isMessagePrefixed, extractPrefixedPayload, prefixMessage } from '../shared/helpers';
+import headers from '../shared/headers';
 import { requestStatuses } from '../uploadStatuses';
 import { WS_URL } from '../shared/hosts.js';
 import { Redirect } from 'react-router-dom';
@@ -86,9 +87,13 @@ const UploadFile = (props) => {
       const uploadFile = async () => {
         try {
           await axios.post(
-            `/upload-file?uploadId=${uploadId}&userToken=${AuthService.getAuthData().token}`,
+            '/upload-file',
             formData,
-            { cancelToken: source.token },
+            {
+              params: { uploadId },
+              headers: { [headers.userToken]: AuthService.getAuthData().token },
+              cancelToken: source.token
+            },
           );
           setUploadState(requestStatuses.done);
         } catch(e) {
