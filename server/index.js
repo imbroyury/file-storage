@@ -35,13 +35,11 @@ wsServer.on('connection', connection => {
     });
 });
 
-server.get('/verifyEmail', async (req, res) => {
+server.get('/confirmEmail', async (req, res) => {
   const { confirmationToken } = req.query;
   try {
-    console.log(confirmationToken);
-    await DBService.confirmEmailByToken(confirmationToken);
+    await DBService.confirmAccountByToken(confirmationToken);
   } catch (e) {
-    console.log(e);
     res.status(500).send();
   }
   res.status(200).send();
@@ -117,7 +115,7 @@ server.post('/register', async (req, res) => {
 
     if (isUserCreated) {
       const confirmationToken = await generateToken();
-      await DBService.putConfirmationTokenForEmail(email, confirmationToken);
+      await DBService.putConfirmationTokenForAccount(email, confirmationToken);
       await EmailService.sendConfirmationEmail(email, login, confirmationToken);
 
       res.status(200).send();
@@ -125,7 +123,6 @@ server.post('/register', async (req, res) => {
       res.status(500).send();
     }
   } catch (e) {
-    console.log(e);
     return res.status(500).send();
   }
 });
@@ -139,8 +136,10 @@ server.post('/login', async (req, res) => {
     const encryptedPassword = await encryptPassword(password);
     if (encryptedPassword !== userByLogin.password) return res.status(401).send(errors.invalidCredentials);
 
-    const token = await generateToken();
+    const isAccountConfirmed = await DBService.getIsAccountConfirmedByLogin(login);
+    if (!isAccountConfirmed) return res.status(401).send(errors.accountNotConfirmed)
 
+    const token = await generateToken();
     await DBService.putSessionForUser(userByLogin.id, token);
 
     res.status(200).send({ token });

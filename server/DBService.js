@@ -70,25 +70,39 @@ const putSessionForUser = async (userId, token) => {
     }
 };
 
-const putConfirmationTokenForEmail = async (email, token) => {
+const putConfirmationTokenForAccount = async (email, token) => {
     try {
-        const userByEmail = await getUserByEmail(email);
         await queryPool(`
             INSERT INTO confirmations (user_id, token, is_confirmed)
-            VALUES (?, ?, 0)
-        `, [userByEmail.id, token]);
+            SELECT id, ?, 0 FROM users
+            WHERE email = ?
+        `, [token, email]);
     } catch (e) {
         throw e;
     }
 }
 
-const confirmEmailByToken = async (token) => {
+const confirmAccountByToken = async (token) => {
     try {
         await queryPool(`
             UPDATE confirmations
             SET is_confirmed = 1
             WHERE token = ?
         `, token)
+    } catch (e) {
+        throw e;
+    }
+}
+
+const getIsAccountConfirmedByLogin = async (login) => {
+    try {
+        const response = await queryPool(`
+            SELECT is_confirmed FROM confirmations
+            WHERE user_id IN (SELECT id FROM users WHERE login = ?)
+        `, login);
+
+        const isConfirmed = response.result[0].is_confirmed === 1;
+        return isConfirmed;
     } catch (e) {
         throw e;
     }
@@ -115,6 +129,7 @@ export default {
     getUserByLogin,
     putSessionForUser,
     getUserIdBySessionToken,
-    putConfirmationTokenForEmail,
-    confirmEmailByToken,
+    putConfirmationTokenForAccount,
+    confirmAccountByToken,
+    getIsAccountConfirmedByLogin,
 }
