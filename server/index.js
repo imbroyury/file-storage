@@ -36,13 +36,13 @@ wsServer.on('connection', connection => {
 });
 
 server.get('/confirmEmail', async (req, res) => {
-  const { confirmationToken } = req.query;
   try {
+    const { confirmationToken } = req.query;
     await DBService.confirmAccountByToken(confirmationToken);
+    res.redirect('/login');
   } catch (e) {
-    res.status(500).send();
+    res.status(500).send(errors.somethingWentWrong);
   }
-  res.status(200).send();
 });
 
 server.use(express.static(BUILD_FOLDER));
