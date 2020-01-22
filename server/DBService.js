@@ -70,7 +70,31 @@ const putSessionForUser = async (userId, token) => {
     }
 };
 
-const getUserIdByToken = async (token) => {
+const putConfirmationTokenForEmail = async (email, token) => {
+    try {
+        const userByEmail = await getUserByEmail(email);
+        await queryPool(`
+            INSERT INTO confirmations (user_id, token, is_confirmed)
+            VALUES (?, ?, 0)
+        `, [userByEmail.id, token]);
+    } catch (e) {
+        throw e;
+    }
+}
+
+const confirmEmailByToken = async (token) => {
+    try {
+        await queryPool(`
+            UPDATE confirmations
+            SET is_confirmed = 1
+            WHERE token = ?
+        `, token)
+    } catch (e) {
+        throw e;
+    }
+}
+
+const getUserIdBySessionToken = async (token) => {
     try {
         const response = await queryPool(`
             SELECT user_id FROM sessions
@@ -90,5 +114,7 @@ export default {
     getUserByEmail,
     getUserByLogin,
     putSessionForUser,
-    getUserIdByToken,
+    getUserIdBySessionToken,
+    putConfirmationTokenForEmail,
+    confirmEmailByToken,
 }

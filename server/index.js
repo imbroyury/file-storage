@@ -10,6 +10,7 @@ import { isMessagePrefixed, extractPrefixedPayload, prefixMessage } from '../src
 import { HTTP_PORT, WS_PORT } from '../src/shared/hosts';
 import WSConnectionsStorage from './WSConnectionsStorage';
 import DBService from './DBService';
+import EmailService from './EmailService';
 import errors from '../src/shared/errors';
 import headers from '../src/shared/headers';
 import { encryptPassword, generateToken } from './crypto';
@@ -34,13 +35,25 @@ wsServer.on('connection', connection => {
     });
 });
 
+server.get('/verifyEmail', async (req, res) => {
+  const { confirmationToken } = req.query;
+  try {
+    console.log(confirmationToken);
+    await DBService.confirmEmailByToken(confirmationToken);
+  } catch (e) {
+    console.log(e);
+    res.status(500).send();
+  }
+  res.status(200).send();
+});
+
 server.use(express.static(BUILD_FOLDER));
 
 // API
 server.get('/get-all-files', async (req, res) => {
   try {
     const userToken = req.headers[headers.userToken];
-    const userId = await DBService.getUserIdByToken(userToken);
+    const userId = await DBService.getUserIdBySessionToken(userToken);
     if (userId === null) return res.status(401).send();
     const allUploadedMeta = await readAllUploadedMeta(userId);
     res.send(allUploadedMeta);
@@ -52,7 +65,7 @@ server.get('/get-all-files', async (req, res) => {
 server.post('/upload-file', async (req, res) => {
   const { uploadId } = req.query;
   const userToken = req.headers[headers.userToken];
-  const userId = await DBService.getUserIdByToken(userToken);
+  const userId = await DBService.getUserIdBySessionToken(userToken);
   if (userId === null) return res.status(401).send();
   const reqProgress = progress({ time: 50, length: req.headers['content-length'] });
   // pipe to track progress
@@ -103,11 +116,16 @@ server.post('/register', async (req, res) => {
     const isUserCreated = await DBService.createUser(email, login, encryptedPassword);
 
     if (isUserCreated) {
+      const confirmationToken = await generateToken();
+      await DBService.putConfirmationTokenForEmail(email, confirmationToken);
+      await EmailService.sendConfirmationEmail(email, login, confirmationToken);
+
       res.status(200).send();
     } else {
       res.status(500).send();
     }
   } catch (e) {
+    console.log(e);
     return res.status(500).send();
   }
 });
@@ -131,12 +149,11 @@ server.post('/login', async (req, res) => {
     res.status(500).send();
   }
 });
-
 // For everything else, serve index file
-server.get('*', function (req, res) {
+server.get('*', (req, res) => {
   res.sendFile(path.join(BUILD_FOLDER, 'index.html'));
 });
 
-server.listen(HTTP_PORT, function () {
+server.listen(HTTP_PORT, () => {
   console.log(`FileStorage listening on port ${HTTP_PORT}!`);
 });
