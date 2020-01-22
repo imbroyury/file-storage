@@ -3,6 +3,7 @@
 server/uploaded-files/*
 server/uploaded-meta/*
 server/email-credentials.json
+server/mysql-credentials.json
 
 # dependencies
 /node_modules
