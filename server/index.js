@@ -4,16 +4,16 @@ import path from 'path';
 import multer from 'multer';
 import progress from 'progress-stream';
 import WebSocket from 'ws';
-import { writeUploadedMeta, readAllUploadedMeta, readUploadedMeta, getPathToUploadedFile } from './fileStorage';
-import { UPLOAD_ID_PREFIX, PERCENTAGE_PREFIX } from '../src/shared/constants';
-import { isMessagePrefixed, extractPrefixedPayload, prefixMessage } from '../src/shared/helpers';
-import { HTTP_PORT, WS_PORT } from '../src/shared/hosts';
 import WSConnectionsStorage from './WSConnectionsStorage';
 import DBService from './DBService';
 import EmailService from './EmailService';
+import { writeUploadedMeta, readAllUploadedMeta, readUploadedMeta, getPathToUploadedFile } from './fileStorage';
+import { encryptPassword, generateToken } from './crypto';
+import { UPLOAD_ID_PREFIX, PERCENTAGE_PREFIX } from '../src/shared/constants';
+import { isMessagePrefixed, extractPrefixedPayload, prefixMessage } from '../src/shared/helpers';
+import { HTTP_PORT, WS_PORT } from '../src/shared/hosts';
 import errors from '../src/shared/errors';
 import headers from '../src/shared/headers';
-import { encryptPassword, generateToken } from './crypto';
 
 const server = express();
 server.use(bodyParser.json());
@@ -148,6 +148,7 @@ server.post('/login', async (req, res) => {
     res.status(500).send();
   }
 });
+
 // For everything else, serve index file
 server.get('*', (req, res) => {
   res.sendFile(path.join(BUILD_FOLDER, 'index.html'));
